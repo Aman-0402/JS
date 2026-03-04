@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JavaScript: The Language of the Web</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,900;1,400&family=JetBrains+Mono:wght@300;400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --js-yellow: #F7DF1E;
+    --js-black: #0A0A0A;
+    --neon-green: #39FF14;
+    --electric-blue: #00D4FF;
+    --hot-orange: #FF6B00;
+    --deep-bg: #060608;
+    --panel-bg: rgba(255,255,255,0.03);
+    --border: rgba(247,223,30,0.15);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--deep-bg);
+    color: #E8E8E0;
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--js-yellow);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-trail {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(247,223,30,0.4);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: left 0.12s ease, top 0.12s ease;
+  }
+
+  /* Canvas rain */
+  #rain-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0.07;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ─── MAIN LAYOUT ─── */
+  .page {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  /* ─── TOP BAR ─── */
+  .topbar {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 28px 52px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .topbar-left {
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .publisher-tag {
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: rgba(247,223,30,0.6);
+  }
+
+  .edition-badge {
+    background: var(--js-yellow);
+    color: #000;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    padding: 4px 10px;
+    text-transform: uppercase;
+  }
+
+  .topbar-right {
+    display: flex; align-items: center; gap: 24px;
+  }
+
+  .nav-item {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    transition: color 0.3s;
+    cursor: pointer;
+  }
+  .nav-item:hover { color: var(--js-yellow); }
+
+  /* ─── LEFT COLUMN ─── */
+  .left-col {
+    grid-column: 1;
+    padding: 60px 52px 60px 52px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+  }
+
+  .chapter-label {
+    font-size: 9px;
+    letter-spacing: 0.4em;
+    color: var(--neon-green);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .chapter-label::before {
+    content: '';
+    width: 30px; height: 1px;
+    background: var(--neon-green);
+    display: block;
+  }
+
+  .main-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 9vw, 130px);
+    line-height: 0.88;
+    letter-spacing: 0.01em;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .main-title span.accent {
+    color: var(--js-yellow);
+    position: relative;
+    display: inline-block;
+  }
+
+  .title-sub {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(18px, 2.2vw, 28px);
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 48px;
+    letter-spacing: 0.01em;
+  }
+
+  .desc-text {
+    font-size: 11px;
+    line-height: 1.9;
+    color: rgba(255,255,255,0.45);
+    max-width: 400px;
+    margin-bottom: 52px;
+    letter-spacing: 0.03em;
+  }
+
+  /* CTA Buttons */
+  .cta-group { display: flex; gap: 16px; align-items: center; }
+
+  .btn-primary {
+    background: var(--js-yellow);
+    color: #000;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 16px 36px;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); }
+  .btn-primary:hover::after { opacity: 1; }
+
+  .btn-secondary {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    background: none;
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 16px 28px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .btn-secondary:hover { border-color: rgba(247,223,30,0.5); color: var(--js-yellow); }
+
+  /* Stats strip */
+  .stats-strip {
+    display: flex;
+    gap: 40px;
+    margin-top: 64px;
+    padding-top: 36px;
+    border-top: 1px solid var(--border);
+  }
+  .stat { display: flex; flex-direction: column; gap: 4px; }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--js-yellow);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 8px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+  }
+
+  /* ─── RIGHT COLUMN ─── */
+  .right-col {
+    grid-column: 2;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-left: 1px solid var(--border);
+  }
+
+  /* Radial glow bg */
+  .right-col::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(247,223,30,0.08) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  /* JS Logo Hero */
+  .js-logo-wrap {
+    position: relative;
+    width: 340px; height: 340px;
+  }
+
+  .js-logo-bg {
+    position: absolute;
+    inset: 0;
+    background: var(--js-yellow);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    animation: logo-breathe 4s ease-in-out infinite;
+  }
+
+  @keyframes logo-breathe {
+    0%, 100% { box-shadow: 0 0 60px rgba(247,223,30,0.3), 0 0 120px rgba(247,223,30,0.1); }
+    50% { box-shadow: 0 0 100px rgba(247,223,30,0.5), 0 0 200px rgba(247,223,30,0.2); }
+  }
+
+  .js-logo-text {
+    position: absolute;
+    bottom: 28px; right: 32px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 90px;
+    color: #000;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  /* Floating code snippets */
+  .code-float {
+    position: absolute;
+    font-size: 10px;
+    line-height: 1.7;
+    padding: 14px 18px;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid rgba(247,223,30,0.2);
+    backdrop-filter: blur(12px);
+    white-space: nowrap;
+    color: rgba(255,255,255,0.7);
+    animation: float-anim var(--dur, 6s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+
+  @keyframes float-anim {
+    0%, 100% { transform: translateY(0px) rotate(var(--rot, -1deg)); }
+    50% { transform: translateY(-14px) rotate(calc(var(--rot, -1deg) * -1)); }
+  }
+
+  .code-float .kw { color: var(--electric-blue); }
+  .code-float .fn { color: var(--js-yellow); }
+  .code-float .str { color: var(--neon-green); }
+  .code-float .cm { color: rgba(255,255,255,0.3); }
+
+  .cf-1 { top: 8%; left: -5%; --dur: 7s; --delay: 0s; --rot: -2deg; }
+  .cf-2 { top: 22%; right: 3%; --dur: 8s; --delay: 1.5s; --rot: 1.5deg; }
+  .cf-3 { bottom: 28%; left: -8%; --dur: 6.5s; --delay: 0.8s; --rot: -1deg; }
+  .cf-4 { bottom: 10%; right: -2%; --dur: 7.5s; --delay: 2s; --rot: 2deg; }
+  .cf-5 { top: 52%; left: -12%; --dur: 9s; --delay: 0.3s; --rot: -1.5deg; }
+
+  /* Orbiting dots */
+  .orbit-ring {
+    position: absolute;
+    top: 50%; left: 50%;
+    border: 1px dashed rgba(247,223,30,0.08);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: orbit-spin linear infinite;
+  }
+  .or-1 { width: 480px; height: 480px; animation-duration: 30s; }
+  .or-2 { width: 560px; height: 560px; animation-duration: 45s; animation-direction: reverse; }
+
+  @keyframes orbit-spin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+  .orbit-dot {
+    position: absolute;
+    width: 6px; height: 6px;
+    background: var(--js-yellow);
+    border-radius: 50%;
+    top: -3px; left: 50%;
+    margin-left: -3px;
+    box-shadow: 0 0 10px var(--js-yellow);
+  }
+
+  /* ─── BOTTOM BAR ─── */
+  .bottombar {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 52px;
+    border-top: 1px solid var(--border);
+  }
+
+  .author-info { display: flex; align-items: center; gap: 16px; }
+
+  .author-avatar {
+    width: 36px; height: 36px;
+    background: var(--js-yellow);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    color: #000;
+    font-weight: bold;
+  }
+
+  .author-text {}
+  .author-name {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.7);
+  }
+  .author-role {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.3);
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .chapter-nav { display: flex; gap: 6px; align-items: center; }
+
+  .chap-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .chap-dot.active { background: var(--js-yellow); box-shadow: 0 0 8px var(--js-yellow); width: 22px; border-radius: 3px; }
+  .chap-dot:hover:not(.active) { background: rgba(247,223,30,0.4); }
+
+  .page-num {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: rgba(255,255,255,0.25);
+  }
+
+  /* ─── DIAGONAL ACCENT LINE ─── */
+  .diag-line {
+    position: absolute;
+    width: 1px;
+    height: 200px;
+    background: linear-gradient(to bottom, transparent, var(--js-yellow), transparent);
+    opacity: 0.3;
+    animation: diag-pulse 3s ease-in-out infinite;
+  }
+  @keyframes diag-pulse { 0%,100%{opacity:0.15} 50%{opacity:0.5} }
+
+  .dl-1 { left: 48%; top: 15%; transform: rotate(25deg); }
+  .dl-2 { right: 10%; top: 30%; transform: rotate(-15deg); animation-delay: 1.5s; }
+
+  /* ─── ANIMATED TYPING TAG ─── */
+  .typing-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 28px;
+  }
+  .typing-tag .blink {
+    width: 2px; height: 14px;
+    background: var(--js-yellow);
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* ─── FEATURES ROW ─── */
+  .features-row {
+    display: flex;
+    gap: 20px;
+    margin-top: 36px;
+  }
+
+  .feat-chip {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    padding: 8px 14px;
+    border: 1px solid rgba(255,255,255,0.07);
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .feat-chip:hover { border-color: rgba(247,223,30,0.3); color: var(--js-yellow); }
+  .feat-chip .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--neon-green); flex-shrink: 0; }
+
+  /* Entrance animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeRight {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.85); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .animate-1 { animation: fadeRight 0.8s ease forwards; opacity: 0; animation-delay: 0.1s; }
+  .animate-2 { animation: fadeUp 0.8s ease forwards; opacity: 0; animation-delay: 0.3s; }
+  .animate-3 { animation: fadeUp 0.8s ease forwards; opacity: 0; animation-delay: 0.5s; }
+  .animate-4 { animation: fadeUp 0.8s ease forwards; opacity: 0; animation-delay: 0.7s; }
+  .animate-5 { animation: fadeUp 0.8s ease forwards; opacity: 0; animation-delay: 0.9s; }
+  .animate-6 { animation: fadeUp 0.8s ease forwards; opacity: 0; animation-delay: 1.1s; }
+  .animate-logo { animation: scaleIn 1s ease forwards; opacity: 0; animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+
+<canvas id="rain-canvas"></canvas>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursor-trail"></div>
+
+<div class="page">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="publisher-tag">DevPress Publishing</span>
+      <span class="edition-badge">2025 Edition</span>
+    </div>
+    <div class="topbar-right">
+      <span class="nav-item">Preview</span>
+      <span class="nav-item">Chapters</span>
+      <span class="nav-item">Author</span>
+      <span class="nav-item">Buy Now →</span>
+    </div>
+  </header>
+
+  <!-- LEFT COLUMN -->
+  <main class="left-col">
+    <div class="chapter-label animate-1">Complete Developer Guide</div>
+
+    <div class="typing-tag animate-2">
+      <span id="typed-text">const js = "The Language of the Web"</span>
+      <span class="blink"></span>
+    </div>
+
+    <h1 class="main-title animate-2">
+      JAVA<br>
+      <span class="accent">SCRIPT</span>
+    </h1>
+    <p class="title-sub animate-3">Mastering the Modern Web</p>
+
+    <p class="desc-text animate-4">
+      From closures to async/await, prototypes to Proxies — this definitive guide transforms beginners into architects of the web. 650+ pages of real-world patterns, zero fluff.
+    </p>
+
+    <div class="cta-group animate-5">
+      <button class="btn-primary">Read Now →</button>
+      <button class="btn-secondary">Free Chapter</button>
+    </div>
+
+    <div class="features-row animate-5">
+      <div class="feat-chip"><span class="dot"></span>ES2025</div>
+      <div class="feat-chip"><span class="dot"></span>650 Pages</div>
+      <div class="feat-chip"><span class="dot"></span>120+ Projects</div>
+    </div>
+
+    <div class="stats-strip animate-6">
+      <div class="stat">
+        <span class="stat-num">42K</span>
+        <span class="stat-label">Readers</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">4.9</span>
+        <span class="stat-label">Rating</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">18</span>
+        <span class="stat-label">Chapters</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">120+</span>
+        <span class="stat-label">Examples</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+    <div class="orbit-ring or-1"><div class="orbit-dot"></div></div>
+    <div class="orbit-ring or-2"><div class="orbit-dot"></div></div>
+
+    <!-- Floating code snippets -->
+    <div class="code-float cf-1">
+      <span class="kw">const</span> <span class="fn">greet</span> = <span class="kw">async</span> (name) => {<br>
+      &nbsp;&nbsp;<span class="kw">await</span> <span class="fn">sleep</span>(<span class="str">1000</span>);<br>
+      &nbsp;&nbsp;<span class="kw">return</span> <span class="str">`Hello, ${name}!`</span>;<br>
+      };
+    </div>
+
+    <div class="code-float cf-2">
+      <span class="cm">// Prototype chain magic</span><br>
+      <span class="fn">Array</span>.prototype.<span class="fn">last</span> = <span class="kw">function</span>() {<br>
+      &nbsp;&nbsp;<span class="kw">return</span> <span class="kw">this</span>[<span class="kw">this</span>.length - <span class="str">1</span>];<br>
+      };
+    </div>
+
+    <div class="code-float cf-3">
+      <span class="kw">const</span> [state, setState] = <span class="fn">useState</span>(<span class="str">null</span>);<br>
+      <span class="fn">useEffect</span>(() => {<br>
+      &nbsp;&nbsp;<span class="fn">fetchData</span>().then(setState);<br>
+      }, []);
+    </div>
+
+    <div class="code-float cf-4">
+      <span class="cm">// Destructuring + spread</span><br>
+      <span class="kw">const</span> { x, y, ...rest } = obj;<br>
+      <span class="kw">const</span> merged = { ...a, ...b };
+    </div>
+
+    <div class="code-float cf-5">
+      <span class="fn">Promise</span>.all([<br>
+      &nbsp;&nbsp;<span class="fn">fetch</span>(<span class="str">'/api/users'</span>),<br>
+      &nbsp;&nbsp;<span class="fn">fetch</span>(<span class="str">'/api/posts'</span>)<br>
+      ]).then(([users, posts]) => {});
+    </div>
+
+    <!-- Main JS Logo -->
+    <div class="js-logo-wrap animate-logo">
+      <div class="js-logo-bg"></div>
+      <div class="js-logo-text">JS</div>
+    </div>
+
+    <div class="diag-line dl-1"></div>
+    <div class="diag-line dl-2"></div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <footer class="bottombar">
+    <div class="author-info">
+      <div class="author-avatar">AK</div>
+      <div class="author-text">
+        <div class="author-name">Alexandra Kowalski</div>
+        <div class="author-role">Senior Engineer · Google · 12 yrs experience</div>
+      </div>
+    </div>
+
+    <div class="chapter-nav">
+      <div class="chap-dot active"></div>
+      <div class="chap-dot"></div>
+      <div class="chap-dot"></div>
+      <div class="chap-dot"></div>
+      <div class="chap-dot"></div>
+    </div>
+
+    <div class="page-num">pg. 001 / 650</div>
+  </footer>
+
+</div>
+
+<script>
+  // ── Custom cursor
+  const cursor = document.getElementById('cursor');
+  const trail = document.getElementById('cursor-trail');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX - 6 + 'px';
+    cursor.style.top = e.clientY - 6 + 'px';
+    setTimeout(() => {
+      trail.style.left = e.clientX - 18 + 'px';
+      trail.style.top = e.clientY - 18 + 'px';
+    }, 80);
+  });
+  document.querySelectorAll('button, .nav-item, .chap-dot').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.style.transform = 'scale(2.5)');
+    el.addEventListener('mouseleave', () => cursor.style.transform = 'scale(1)');
+  });
+
+  // ── Code rain canvas
+  const canvas = document.getElementById('rain-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const chars = 'コンソールfunctionconstletvarasyncawaitreturnpromisemapfilterreducethenclass{}[]=>'.split('');
+  const fontSize = 13;
+  const cols = Math.floor(canvas.width / fontSize);
+  const drops = Array(cols).fill(1);
+
+  function drawRain() {
+    ctx.fillStyle = 'rgba(6,6,8,0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#F7DF1E';
+    ctx.font = fontSize + 'px JetBrains Mono';
+    drops.forEach((y, i) => {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(char, i * fontSize, y * fontSize);
+      if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    });
+  }
+  setInterval(drawRain, 50);
+
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  // ── Typing effect
+  const lines = [
+    'const js = "The Language of the Web"',
+    'let power = Infinity;',
+    'async function master() { ... }',
+    'export default { creativity };',
+    'import { future } from "tomorrow";',
+  ];
+  let lineIdx = 0, charIdx = 0, deleting = false;
+  const typedEl = document.getElementById('typed-text');
+
+  function type() {
+    const line = lines[lineIdx];
+    if (!deleting) {
+      typedEl.textContent = line.slice(0, charIdx++);
+      if (charIdx > line.length) { deleting = true; setTimeout(type, 1800); return; }
+    } else {
+      typedEl.textContent = line.slice(0, charIdx--);
+      if (charIdx < 0) { deleting = false; lineIdx = (lineIdx + 1) % lines.length; charIdx = 0; }
+    }
+    setTimeout(type, deleting ? 35 : 55);
+  }
+  setTimeout(type, 1200);
+
+  // ── Chapter nav
+  document.querySelectorAll('.chap-dot').forEach((dot, i, all) => {
+    dot.addEventListener('click', () => {
+      all.forEach(d => d.classList.remove('active'));
+      dot.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
