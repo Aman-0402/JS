@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JavaScript: The Infinite Loop — Ebook</title>
+  <title>JavaScript: The Infinite Loop — by Aman</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Fira+Code:wght@300;400;600&family=Anton&display=swap" rel="stylesheet" />
@@ -11,60 +11,28 @@
 </head>
 <body>
 
-  <!-- Noise grain layer -->
   <div class="grain"></div>
-
-  <!-- Spotlight that follows cursor -->
   <div class="spotlight" id="spotlight"></div>
-
-  <!-- Canvas backgrounds -->
   <canvas id="particle-canvas"></canvas>
   <canvas id="grid-canvas"></canvas>
-
-  <!-- Custom cursor -->
   <div class="cursor-dot" id="cursorDot"></div>
   <div class="cursor-ring" id="cursorRing"></div>
 
-  <!-- ═══════════════════════════════════════ -->
-  <!--              HEADER NAV                -->
-  <!-- ═══════════════════════════════════════ -->
-  <header class="site-header" id="siteHeader">
-    <div class="header-left">
-      <div class="logo-mark">
-        <span class="lm-bracket">{</span>
-        <span class="lm-text">js</span>
-        <span class="lm-bracket">}</span>
-      </div>
-      <div class="header-meta">
-        <span class="hm-pub">DevPress</span>
-        <span class="hm-dot"></span>
-        <span class="hm-year">2025</span>
-      </div>
-    </div>
-    <nav class="header-nav">
-      <a class="hn-link" data-text="Preview">Preview</a>
-      <a class="hn-link" data-text="Chapters">Chapters</a>
-      <a class="hn-link" data-text="Author">Author</a>
-    </nav>
-    <div class="header-right">
-      <button class="btn-outline magnetic" data-magnetic>Get Free Chapter</button>
-    </div>
-  </header>
+  <!-- ══════════════════════════════════════ -->
+  <!--         FIXED FULL-PAGE WRAPPER       -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="page-wrapper">
 
-  <!-- ═══════════════════════════════════════ -->
-  <!--              HERO SECTION              -->
-  <!-- ═══════════════════════════════════════ -->
-  <section class="hero">
+    <!-- LEFT COLUMN -->
+    <div class="col-left">
 
-    <!-- Left: Text content -->
-    <div class="hero-left">
-      <div class="tag-row reveal" data-delay="0">
-        <span class="tag-pill">★ #1 Best Seller 2025</span>
-        <span class="tag-sep">·</span>
-        <span class="tag-plain">650 pages · 18 chapters</span>
+      <div class="eyebrow reveal" data-delay="0">
+        <span class="eyebrow-line"></span>
+        <span class="eyebrow-text">Made for Students · Free to Learn</span>
+        <span class="tag-pill">★ ES2025</span>
       </div>
 
-      <div class="title-wrap reveal" data-delay="100">
+      <div class="title-block reveal" data-delay="80">
         <h1 class="hero-title">
           <span class="ht-line" id="glitchLine">THE</span>
           <span class="ht-line ht-accent">INFINITE</span>
@@ -73,12 +41,12 @@
         <p class="hero-subtitle">A Complete Guide to <em>JavaScript</em></p>
       </div>
 
-      <p class="hero-desc reveal" data-delay="200">
-        From raw syntax to architectural mastery — closures, async patterns, the event loop, and modern ES2025 features. Built for engineers who refuse to stop at "good enough."
+      <p class="hero-desc reveal" data-delay="160">
+        Written by <strong>Aman</strong> for students — from absolute zero to confident JS developer. Closures, async/await, DOM, APIs &amp; modern ES2025.
       </p>
 
-      <!-- Interactive terminal snippet -->
-      <div class="mini-terminal reveal" data-delay="300" id="terminal">
+      <!-- Mini Terminal -->
+      <div class="mini-terminal reveal" data-delay="240" id="terminal">
         <div class="term-bar">
           <span class="tb-dot tb-red"></span>
           <span class="tb-dot tb-yellow"></span>
@@ -89,7 +57,6 @@
           <div class="term-line" id="termLine1"></div>
           <div class="term-line" id="termLine2"></div>
           <div class="term-line" id="termLine3"></div>
-          <div class="term-line" id="termLine4"></div>
           <div class="term-line active-line" id="termActive">
             <span class="prompt">▶</span>
             <span class="user-input" id="userInput"></span>
@@ -98,48 +65,49 @@
         </div>
       </div>
 
-      <!-- CTA Buttons -->
-      <div class="cta-row reveal" data-delay="400">
-        <button class="btn-primary magnetic" data-magnetic id="readBtn">
-          <span class="btn-text">Read Now</span>
+      <!-- CTA -->
+      <div class="cta-row reveal" data-delay="320">
+        <button class="btn-primary magnetic" data-magnetic id="readBtn" onclick="goToContents()">
+          <span class="btn-text">Start Learning</span>
           <span class="btn-arrow">→</span>
           <span class="btn-ripple"></span>
         </button>
-        <button class="btn-ghost magnetic" data-magnetic>
-          <span>↓ Sample PDF</span>
+        <button class="btn-ghost magnetic" data-magnetic onclick="goToContents()">
+          <span>📖 View Contents</span>
         </button>
       </div>
 
-      <!-- Stats row -->
-      <div class="stats-row reveal" data-delay="500">
+      <!-- Stats -->
+      <div class="stats-row reveal" data-delay="400">
         <div class="stat-item">
-          <div class="stat-val" data-count="42000">0</div>
-          <div class="stat-key">Readers</div>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <div class="stat-val" data-count="4.9" data-decimal>0</div>
-          <div class="stat-key">Avg Rating</div>
+          <div class="stat-val" data-count="38">0</div>
+          <div class="stat-key">Topics</div>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
           <div class="stat-val" data-count="120">0</div>
-          <div class="stat-key">Code Examples</div>
+          <div class="stat-key">Examples</div>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
-          <div class="stat-val" data-count="18">0</div>
-          <div class="stat-key">Chapters</div>
+          <div class="stat-val" data-count="650">0</div>
+          <div class="stat-key">Pages</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-val" data-count="100">0</div>
+          <div class="stat-key">% Free</div>
         </div>
       </div>
-    </div>
 
-    <!-- Right: 3D Book Cover -->
-    <div class="hero-right">
+    </div><!-- /col-left -->
+
+    <!-- RIGHT COLUMN -->
+    <div class="col-right">
+
       <div class="book-scene" id="bookScene">
-        <div class="book-3d" id="book3d">
+        <div class="book-3d" id="book3d" onclick="goToContents()" title="Click to explore contents">
 
-          <!-- Front face -->
           <div class="book-face book-front">
             <div class="bf-top-strip">
               <span>JAVASCRIPT</span>
@@ -159,7 +127,7 @@
               <div class="bft-main">THE INFINITE LOOP</div>
               <div class="bft-sub">A Complete Guide to JavaScript</div>
             </div>
-            <div class="bf-author">Alexandra Kowalski</div>
+            <div class="bf-author">Aman</div>
             <div class="bf-code-strip" id="codeStrip">
               <span class="bcs-item"><span class="kw">async</span> / <span class="kw">await</span></span>
               <span class="bcs-sep">•</span>
@@ -171,13 +139,11 @@
             </div>
           </div>
 
-          <!-- Spine -->
           <div class="book-face book-spine">
             <span class="bs-title">THE INFINITE LOOP</span>
-            <span class="bs-author">A. Kowalski</span>
+            <span class="bs-author">Aman</span>
           </div>
 
-          <!-- Back face -->
           <div class="book-face book-back">
             <div class="bb-content">
               <p class="bb-quote">"The most comprehensive JS guide I've ever read."</p>
@@ -186,96 +152,98 @@
           </div>
 
         </div>
-
-        <!-- Book shadow -->
         <div class="book-shadow" id="bookShadow"></div>
       </div>
 
-      <!-- Floating badges -->
-      <div class="float-badge fb-1 reveal" data-delay="600">
+      <div class="float-badge fb-1 reveal" data-delay="500">
         <span class="fbadge-icon">⚡</span>
         <div>
           <div class="fbadge-val">ES2025</div>
           <div class="fbadge-label">Up to date</div>
         </div>
       </div>
-      <div class="float-badge fb-2 reveal" data-delay="700">
-        <span class="fbadge-icon">🏆</span>
+      <div class="float-badge fb-2 reveal" data-delay="620">
+        <span class="fbadge-icon">🎓</span>
         <div>
-          <div class="fbadge-val">Best Seller</div>
-          <div class="fbadge-label">Dev Books 2025</div>
+          <div class="fbadge-val">For Students</div>
+          <div class="fbadge-label">Beginner Friendly</div>
         </div>
       </div>
-      <div class="float-badge fb-3 reveal" data-delay="800">
-        <span class="fbadge-icon">🔥</span>
+      <div class="float-badge fb-3 reveal" data-delay="740">
+        <span class="fbadge-icon">✍️</span>
         <div>
-          <div class="fbadge-val">42K+</div>
-          <div class="fbadge-label">Active readers</div>
+          <div class="fbadge-val">By Aman</div>
+          <div class="fbadge-label">With ❤️ for learners</div>
         </div>
       </div>
 
+    </div><!-- /col-right -->
+
+    <!-- TICKER -->
+    <div class="ticker-wrap">
+      <div class="ticker-track" id="tickerTrack">
+        <span>Variables &amp; Scope</span><span class="sep">◆</span>
+        <span>Closures</span><span class="sep">◆</span>
+        <span>Prototypes</span><span class="sep">◆</span>
+        <span>The Event Loop</span><span class="sep">◆</span>
+        <span>Promises &amp; Async</span><span class="sep">◆</span>
+        <span>Generators</span><span class="sep">◆</span>
+        <span>Proxies &amp; Reflect</span><span class="sep">◆</span>
+        <span>Modules</span><span class="sep">◆</span>
+        <span>Web Workers</span><span class="sep">◆</span>
+        <span>WebAssembly</span><span class="sep">◆</span>
+        <span>Performance</span><span class="sep">◆</span>
+        <span>Security</span><span class="sep">◆</span>
+        <span>Testing</span><span class="sep">◆</span>
+        <span>TypeScript</span><span class="sep">◆</span>
+      </div>
     </div>
-  </section>
 
-  <!-- ═══════════════════════════════════════ -->
-  <!--            CHAPTERS TICKER             -->
-  <!-- ═══════════════════════════════════════ -->
-  <div class="ticker-wrap">
-    <div class="ticker-track" id="tickerTrack">
-      <span>Variables & Scope</span><span class="sep">◆</span>
-      <span>Closures</span><span class="sep">◆</span>
-      <span>Prototypes</span><span class="sep">◆</span>
-      <span>The Event Loop</span><span class="sep">◆</span>
-      <span>Promises & Async</span><span class="sep">◆</span>
-      <span>Generators</span><span class="sep">◆</span>
-      <span>Proxies & Reflect</span><span class="sep">◆</span>
-      <span>Modules</span><span class="sep">◆</span>
-      <span>WeakRef & FinReg</span><span class="sep">◆</span>
-      <span>Web Workers</span><span class="sep">◆</span>
-      <span>WebAssembly</span><span class="sep">◆</span>
-      <span>Performance</span><span class="sep">◆</span>
-      <span>Security Patterns</span><span class="sep">◆</span>
-      <span>Testing</span><span class="sep">◆</span>
+    <!-- FOOTER -->
+    <footer class="site-footer">
+      <div class="sf-left">
+        <div class="sf-avatar">AM</div>
+        <div class="sf-info">
+          <div class="sf-name">Aman</div>
+          <div class="sf-role">JavaScript Educator · Student-First Approach</div>
+        </div>
+      </div>
+      <div class="sf-center">
+        <div class="progress-ring-wrap" id="progressRingWrap">
+          <svg class="progress-ring" viewBox="0 0 60 60">
+            <circle class="pr-bg" cx="30" cy="30" r="25"/>
+            <circle class="pr-fill" id="prFill" cx="30" cy="30" r="25"/>
+          </svg>
+          <span class="pr-pct" id="prPct">0%</span>
+        </div>
+        <span class="sf-complete-label">Preview Progress</span>
+      </div>
+      <div class="sf-right">
+        <div class="sf-price">
+          <span class="price-old">Paid</span>
+          <span class="price-new">FREE</span>
+          <span class="price-badge">OPEN</span>
+        </div>
+        <button class="btn-buy magnetic" data-magnetic onclick="goToContents()">Explore Contents →</button>
+      </div>
+    </footer>
+
+  </div><!-- /page-wrapper -->
+
+  <!-- Page transition -->
+  <div class="page-transition" id="pageTransition">
+    <div class="pt-inner">
+      <div class="pt-logo">{js}</div>
+      <div class="pt-text">Loading Contents...</div>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════ -->
-  <!--              FOOTER BAR                -->
-  <!-- ═══════════════════════════════════════ -->
-  <footer class="site-footer">
-    <div class="sf-left">
-      <div class="sf-avatar">AK</div>
-      <div class="sf-info">
-        <div class="sf-name">Alexandra Kowalski</div>
-        <div class="sf-role">Senior Engineer · Google · Author · Speaker</div>
-      </div>
-    </div>
-    <div class="sf-center">
-      <div class="progress-ring-wrap" id="progressRingWrap">
-        <svg class="progress-ring" viewBox="0 0 60 60">
-          <circle class="pr-bg" cx="30" cy="30" r="25"/>
-          <circle class="pr-fill" id="prFill" cx="30" cy="30" r="25"/>
-        </svg>
-        <span class="pr-pct" id="prPct">0%</span>
-      </div>
-      <span class="sf-complete-label">Preview Progress</span>
-    </div>
-    <div class="sf-right">
-      <div class="sf-price">
-        <span class="price-old">$59</span>
-        <span class="price-new">$39</span>
-        <span class="price-badge">LAUNCH</span>
-      </div>
-      <button class="btn-buy magnetic" data-magnetic>Buy Ebook →</button>
-    </div>
-  </footer>
-
-  <!-- Easter egg hint -->
+  <!-- Easter egg -->
   <div class="easter-hint" id="easterHint">↑↑↓↓←→←→ B A</div>
   <div class="easter-modal" id="easterModal">
     <div class="em-inner">
       <div class="em-code">console.log("You found it! 🎉")</div>
-      <div class="em-msg">Konami Code activated — 20% off coupon: <strong>LOOP2025</strong></div>
+      <div class="em-msg">Konami Code activated!<br>Coupon: <strong>LOOP2025</strong></div>
       <button class="em-close" id="emClose">Close ×</button>
     </div>
   </div>

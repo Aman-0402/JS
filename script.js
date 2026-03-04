@@ -1,528 +1,353 @@
-/* ════════════════════════════════════════════════════
-   JAVASCRIPT EBOOK FRONTPAGE — script.js
-   Features:
-     - Custom cursor + magnetic buttons
-     - Particle canvas system
-     - Grid canvas background
-     - 3D Book tilt on mouse move
-     - Live typing terminal demo
-     - Animated stat counters
-     - Intersection Observer reveals
-     - Ticker duplication
-     - Progress ring animation
-     - Konami code easter egg
-     - Spotlight cursor effect
-     - Click particle burst
-   ════════════════════════════════════════════════════ */
-
 "use strict";
 
-/* ─────────────────────────────────────────────
-   1.  UTILITY
-───────────────────────────────────────────── */
-const $ = (sel, ctx = document) => ctx.querySelector(sel);
-const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
-const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+/* ── Utilities ── */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 const lerp = (a, b, t) => a + (b - a) * t;
-const rand = (min, max) => Math.random() * (max - min) + min;
+const rand = (a, b) => Math.random() * (b - a) + a;
+const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
 
-/* ─────────────────────────────────────────────
-   2.  CUSTOM CURSOR
-───────────────────────────────────────────── */
-(function initCursor() {
+/* ════════════════════════════════════════════
+   1. CUSTOM CURSOR
+   ════════════════════════════════════════════ */
+(function () {
   const dot  = $('#cursorDot');
   const ring = $('#cursorRing');
-  let mx = -100, my = -100;
-  let rx = -100, ry = -100;
+  let mx = -100, my = -100, rx = -100, ry = -100;
 
   document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
 
-  function tick() {
-    dot.style.left  = mx + 'px';
-    dot.style.top   = my + 'px';
-    rx = lerp(rx, mx, 0.14);
-    ry = lerp(ry, my, 0.14);
-    ring.style.left = rx + 'px';
-    ring.style.top  = ry + 'px';
+  (function tick() {
+    dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    rx = lerp(rx, mx, 0.14); ry = lerp(ry, my, 0.14);
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
     requestAnimationFrame(tick);
-  }
-  tick();
+  })();
 
-  const hoverEls = $$('button, a, .hn-link, .chap-dot, .book-3d');
-  hoverEls.forEach(el => {
+  $$('button, .book-3d, .float-badge').forEach(el => {
     el.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
     el.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
   });
 })();
 
-/* ─────────────────────────────────────────────
-   3.  SPOTLIGHT
-───────────────────────────────────────────── */
-(function initSpotlight() {
+/* ════════════════════════════════════════════
+   2. SPOTLIGHT
+   ════════════════════════════════════════════ */
+document.addEventListener('mousemove', e => {
   const sp = $('#spotlight');
-  document.addEventListener('mousemove', e => {
-    sp.style.background = `radial-gradient(circle 320px at ${e.clientX}px ${e.clientY}px, rgba(247,223,30,0.05) 0%, transparent 70%)`;
-  });
-})();
+  if (sp) sp.style.background =
+    `radial-gradient(circle 300px at ${e.clientX}px ${e.clientY}px, rgba(247,223,30,0.05) 0%, transparent 70%)`;
+});
 
-/* ─────────────────────────────────────────────
-   4.  GRID CANVAS
-───────────────────────────────────────────── */
-(function initGrid() {
+/* ════════════════════════════════════════════
+   3. GRID CANVAS
+   ════════════════════════════════════════════ */
+(function () {
   const canvas = $('#grid-canvas');
-  const ctx    = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d');
 
   function resize() {
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
     draw();
   }
-
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const spacing = 52;
-    ctx.strokeStyle = 'rgba(247,223,30,0.04)';
-    ctx.lineWidth   = 1;
-
-    // vertical lines
-    for (let x = 0; x <= canvas.width; x += spacing) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-    }
-    // horizontal lines
-    for (let y = 0; y <= canvas.height; y += spacing) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-    }
-
-    // accent dots at intersections (sparse)
-    ctx.fillStyle = 'rgba(247,223,30,0.12)';
-    for (let x = 0; x <= canvas.width; x += spacing * 4) {
-      for (let y = 0; y <= canvas.height; y += spacing * 4) {
-        ctx.beginPath(); ctx.arc(x, y, 1.5, 0, Math.PI * 2); ctx.fill();
+    const sp = 54;
+    ctx.strokeStyle = 'rgba(247,223,30,0.045)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= canvas.width;  x += sp) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+    for (let y = 0; y <= canvas.height; y += sp) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+    ctx.fillStyle = 'rgba(247,223,30,0.13)';
+    for (let x = 0; x <= canvas.width;  x += sp * 4)
+      for (let y = 0; y <= canvas.height; y += sp * 4) {
+        ctx.beginPath(); ctx.arc(x, y, 1.4, 0, Math.PI * 2); ctx.fill();
       }
-    }
   }
-
   resize();
   window.addEventListener('resize', resize);
 })();
 
-/* ─────────────────────────────────────────────
-   5.  PARTICLE CANVAS
-───────────────────────────────────────────── */
-(function initParticles() {
+/* ════════════════════════════════════════════
+   4. PARTICLE CANVAS
+   ════════════════════════════════════════════ */
+(function () {
   const canvas = $('#particle-canvas');
   const ctx    = canvas.getContext('2d');
-  const TOTAL  = 80;
-  const particles = [];
 
-  function resize() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
   resize();
   window.addEventListener('resize', resize);
 
-  class Particle {
-    constructor() { this.reset(true); }
-    reset(initial = false) {
-      this.x    = rand(0, canvas.width);
-      this.y    = initial ? rand(0, canvas.height) : canvas.height + 10;
-      this.size = rand(1, 2.5);
-      this.speed= rand(0.2, 0.8);
-      this.opacity = rand(0.1, 0.5);
-      this.drift= rand(-0.2, 0.2);
-    }
-    update() {
-      this.y -= this.speed;
-      this.x += this.drift;
-      if (this.y < -10) this.reset();
-    }
-    draw() {
-      ctx.save();
-      ctx.globalAlpha = this.opacity;
-      ctx.fillStyle = '#F7DF1E';
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
-  }
+  const particles = Array.from({ length: 70 }, () => ({
+    x: rand(0, canvas.width),
+    y: rand(0, canvas.height),
+    size: rand(1, 2.2),
+    speed: rand(0.18, 0.7),
+    drift: rand(-0.18, 0.18),
+    opacity: rand(0.08, 0.45),
+    reset() { this.y = canvas.height + 8; this.x = rand(0, canvas.width); }
+  }));
 
-  for (let i = 0; i < TOTAL; i++) particles.push(new Particle());
-
-  function loop() {
+  (function loop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach(p => { p.update(); p.draw(); });
+    particles.forEach(p => {
+      p.y -= p.speed; p.x += p.drift;
+      if (p.y < -8) p.reset();
+      ctx.save(); ctx.globalAlpha = p.opacity;
+      ctx.fillStyle = '#F7DF1E';
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    });
     requestAnimationFrame(loop);
-  }
-  loop();
+  })();
 
-  /* Click burst */
+  /* click burst */
   document.addEventListener('click', e => {
-    for (let i = 0; i < 12; i++) {
-      const burst = {
-        x: e.clientX, y: e.clientY,
-        vx: rand(-4, 4), vy: rand(-4, 4),
-        life: 1, size: rand(2, 4),
-        draw() {
-          this.x += this.vx; this.y += this.vy; this.vy += 0.1;
-          this.life -= 0.04;
-          ctx.save();
-          ctx.globalAlpha = Math.max(0, this.life);
-          ctx.fillStyle = '#F7DF1E';
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
-      };
-      particles.push(burst);
+    for (let i = 0; i < 10; i++) {
+      const b = { x: e.clientX, y: e.clientY, vx: rand(-4, 4), vy: rand(-5, 1), life: 1, size: rand(2, 4) };
+      const burst = setInterval(() => {
+        b.x += b.vx; b.y += b.vy; b.vy += 0.15; b.life -= 0.05;
+        if (b.life <= 0) { clearInterval(burst); return; }
+        ctx.save(); ctx.globalAlpha = b.life;
+        ctx.fillStyle = '#F7DF1E';
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.size * b.life, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }, 16);
     }
-    // clean up dead burst particles
-    setTimeout(() => {
-      const base = particles.splice(0, 12);
-      void base;
-    }, 1500);
   });
 })();
 
-/* ─────────────────────────────────────────────
-   6.  3D BOOK TILT
-───────────────────────────────────────────── */
-(function initBookTilt() {
+/* ════════════════════════════════════════════
+   5. 3D BOOK TILT
+   ════════════════════════════════════════════ */
+(function () {
   const scene  = $('#bookScene');
   const book   = $('#book3d');
   const shadow = $('#bookShadow');
   if (!scene || !book) return;
 
-  let currentRY = -25, currentRX = 5;
-  let targetRY  = -25, targetRX  = 5;
+  let cRY = -25, cRX = 5, tRY = -25, tRX = 5;
 
   scene.addEventListener('mousemove', e => {
-    const rect = scene.getBoundingClientRect();
-    const cx   = rect.left + rect.width  / 2;
-    const cy   = rect.top  + rect.height / 2;
-    const dx   = (e.clientX - cx) / (rect.width  / 2);
-    const dy   = (e.clientY - cy) / (rect.height / 2);
-    targetRY = clamp(-25 + dx * 20, -45, 5);
-    targetRX = clamp(5  - dy * 12, -10, 18);
+    const r = scene.getBoundingClientRect();
+    const dx = (e.clientX - r.left  - r.width  / 2) / (r.width  / 2);
+    const dy = (e.clientY - r.top   - r.height / 2) / (r.height / 2);
+    tRY = clamp(-25 + dx * 20, -46, 4);
+    tRX = clamp(5   - dy * 12, -10, 18);
   });
 
   scene.addEventListener('mouseenter', () => book.classList.add('tilt-active'));
   scene.addEventListener('mouseleave', () => {
     book.classList.remove('tilt-active');
-    targetRY = -25; targetRX = 5;
+    tRY = -25; tRX = 5;
   });
 
-  function animTilt() {
-    currentRY = lerp(currentRY, targetRY, 0.1);
-    currentRX = lerp(currentRX, targetRX, 0.1);
-    const translateY = book.classList.contains('tilt-active') ? 0 : 0;
-    book.style.transform   = `rotateY(${currentRY}deg) rotateX(${currentRX}deg)`;
-    shadow.style.transform = `translateX(-50%) scaleX(${0.8 + (currentRY + 45) * 0.004})`;
+  (function animTilt() {
+    cRY = lerp(cRY, tRY, 0.1);
+    cRX = lerp(cRX, tRX, 0.1);
+    book.style.transform   = `rotateY(${cRY}deg) rotateX(${cRX}deg)`;
+    shadow.style.transform = `translateX(-50%) scaleX(${0.8 + (cRY + 45) * 0.004})`;
     requestAnimationFrame(animTilt);
-  }
-  animTilt();
+  })();
 })();
 
-/* ─────────────────────────────────────────────
-   7.  TERMINAL TYPING DEMO
-───────────────────────────────────────────── */
-(function initTerminal() {
-  const lines = [
-    { id: 'termLine1', html: '<span class="cm">// Chapter 4: Closures</span>', delay: 400 },
-    { id: 'termLine2', html: '<span class="kw">const</span> <span class="fn">makeCounter</span> = () => {', delay: 900 },
-    { id: 'termLine3', html: '&nbsp;&nbsp;<span class="kw">let</span> count = <span class="num">0</span>;', delay: 1300 },
-    { id: 'termLine4', html: '&nbsp;&nbsp;<span class="kw">return</span> () => ++count;', delay: 1700 },
+/* ════════════════════════════════════════════
+   6. TERMINAL TYPING
+   ════════════════════════════════════════════ */
+(function () {
+  const staticLines = [
+    { id: 'termLine1', html: '<span class="cm">// Chapter 4: Closures</span>',         delay: 350 },
+    { id: 'termLine2', html: '<span class="kw">const</span> <span class="fn">makeCounter</span> = () => {', delay: 800 },
+    { id: 'termLine3', html: '&nbsp;&nbsp;<span class="kw">return</span> () => ++<span class="num">count</span>;', delay: 1200 },
+  ];
+  const cycling = [
+    '};',
+    '',
+    'const counter = makeCounter();',
+    'counter(); // → 1',
+    'counter(); // → 2  ← magic!',
   ];
 
-  const activeSnippets = [
-    { text: '};', delay: 400 },
-    { text: '', delay: 700 },
-    { text: 'const counter = makeCounter();', delay: 1100 },
-    { text: 'counter(); // 1', delay: 1600 },
-    { text: 'counter(); // 2  ← magic!', delay: 2100 },
-  ];
+  staticLines.forEach(({ id, html, delay }) =>
+    setTimeout(() => { const el = $('#' + id); if (el) el.innerHTML = html; }, delay)
+  );
 
-  let snippetIdx  = 0;
-  let charIdx     = 0;
-  let phase       = 'static'; // static → typing → pause → clear → typing
-
-  // Reveal static lines
-  lines.forEach(({ id, html, delay }) => {
-    setTimeout(() => {
-      const el = $('#' + id);
-      if (el) el.innerHTML = html;
-    }, delay);
-  });
-
-  // Start cycling active line after all static lines appear
-  setTimeout(startTypingCycle, 2200);
-
-  function startTypingCycle() {
+  let si = 0, ci = 0;
+  setTimeout(function type() {
     const userInput = $('#userInput');
-    const caret     = $('#caret');
     if (!userInput) return;
-
-    function typeNext() {
-      const snippet = activeSnippets[snippetIdx];
-      if (!snippet) return;
-
-      if (charIdx <= snippet.text.length) {
-        userInput.textContent = snippet.text.slice(0, charIdx++);
-        setTimeout(typeNext, charIdx > snippet.text.length ? 700 : 55);
-      } else {
-        // done typing this snippet — wait then clear
-        setTimeout(() => {
-          charIdx = 0;
-          snippetIdx = (snippetIdx + 1) % activeSnippets.length;
-          userInput.textContent = '';
-          typeNext();
-        }, 1200);
-      }
+    const snippet = cycling[si];
+    if (ci <= snippet.length) {
+      userInput.textContent = snippet.slice(0, ci++);
+      setTimeout(type, ci > snippet.length ? 750 : 52);
+    } else {
+      setTimeout(() => {
+        ci = 0; si = (si + 1) % cycling.length;
+        userInput.textContent = '';
+        type();
+      }, 1100);
     }
-    typeNext();
-  }
+  }, 1600);
 })();
 
-/* ─────────────────────────────────────────────
-   8.  MAGNETIC BUTTONS
-───────────────────────────────────────────── */
-(function initMagnetic() {
-  $$('[data-magnetic]').forEach(btn => {
-    btn.addEventListener('mousemove', e => {
-      const rect = btn.getBoundingClientRect();
-      const cx   = rect.left + rect.width  / 2;
-      const cy   = rect.top  + rect.height / 2;
-      const dx   = (e.clientX - cx) * 0.3;
-      const dy   = (e.clientY - cy) * 0.3;
-      btn.style.transform = `translate(${dx}px, ${dy}px)`;
-    });
-    btn.addEventListener('mouseleave', () => {
-      btn.style.transform = '';
-    });
+/* ════════════════════════════════════════════
+   7. MAGNETIC BUTTONS
+   ════════════════════════════════════════════ */
+$$('[data-magnetic]').forEach(btn => {
+  btn.addEventListener('mousemove', e => {
+    const r = btn.getBoundingClientRect();
+    const dx = (e.clientX - r.left - r.width  / 2) * 0.28;
+    const dy = (e.clientY - r.top  - r.height / 2) * 0.28;
+    btn.style.transform = `translate(${dx}px,${dy}px)`;
   });
-})();
+  btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+});
 
-/* ─────────────────────────────────────────────
-   9.  INTERSECTION OBSERVER — REVEALS & COUNTERS
-───────────────────────────────────────────── */
-(function initReveal() {
-  // Reveal elements
-  const revealEls = $$('.reveal');
-  const revealObs = new IntersectionObserver((entries) => {
-    entries.forEach(({ target, isIntersecting }) => {
-      if (!isIntersecting) return;
-      const delay = parseInt(target.dataset.delay || 0);
-      setTimeout(() => target.classList.add('visible'), delay);
-      revealObs.unobserve(target);
-    });
-  }, { threshold: 0.15 });
-  revealEls.forEach(el => revealObs.observe(el));
+/* ════════════════════════════════════════════
+   8. REVEALS (fire immediately for fixed page)
+   ════════════════════════════════════════════ */
+$$('.reveal').forEach(el => {
+  const delay = parseInt(el.dataset.delay || 0);
+  setTimeout(() => el.classList.add('visible'), delay);
+});
 
-  // Stat counters
-  const statEls = $$('.stat-val[data-count]');
-  const statObs = new IntersectionObserver((entries) => {
-    entries.forEach(({ target, isIntersecting }) => {
-      if (!isIntersecting) return;
-      const end     = parseFloat(target.dataset.count);
-      const decimal = target.dataset.decimal !== undefined;
-      const duration = 1800;
-      const start    = performance.now();
+/* ════════════════════════════════════════════
+   9. STAT COUNTERS — trigger after reveals settle
+   ════════════════════════════════════════════ */
+setTimeout(() => {
+  $$('.stat-val[data-count]').forEach(el => {
+    const end = parseFloat(el.dataset.count);
+    const decimal = 'decimal' in el.dataset;
+    const duration = 1600;
+    const start = performance.now();
+    (function step(now) {
+      const t   = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 4);
+      const val  = end * ease;
+      el.textContent = decimal ? val.toFixed(1)
+        : end >= 1000 ? (val / 1000).toFixed(1) + 'K'
+        : Math.floor(val);
+      if (t < 1) requestAnimationFrame(step);
+      else el.textContent = decimal ? end.toFixed(1) : end >= 1000 ? (end / 1000).toFixed(1) + 'K' : end;
+    })(performance.now());
+  });
+}, 500);
 
-      function step(now) {
-        const t   = Math.min((now - start) / duration, 1);
-        const ease= 1 - Math.pow(1 - t, 4);
-        const val = end * ease;
-        target.textContent = decimal
-          ? val.toFixed(1)
-          : end >= 1000
-            ? (val / 1000).toFixed(1) + 'K'
-            : Math.floor(val);
-        if (t < 1) requestAnimationFrame(step);
-        else target.textContent = decimal ? end.toFixed(1) : end >= 1000 ? (end / 1000).toFixed(1) + 'K' : end;
-      }
-      requestAnimationFrame(step);
-      statObs.unobserve(target);
-    });
-  }, { threshold: 0.5 });
-  statEls.forEach(el => statObs.observe(el));
-})();
-
-/* ─────────────────────────────────────────────
-   10. PROGRESS RING ANIMATION
-───────────────────────────────────────────── */
-(function initProgressRing() {
+/* ════════════════════════════════════════════
+   10. PROGRESS RING
+   ════════════════════════════════════════════ */
+setTimeout(() => {
   const fill = $('#prFill');
   const pct  = $('#prPct');
   if (!fill) return;
-
-  const circumference = 2 * Math.PI * 25; // r=25
-  fill.style.strokeDasharray  = circumference;
-  fill.style.strokeDashoffset = circumference;
-
-  const obs = new IntersectionObserver(([entry]) => {
-    if (!entry.isIntersecting) return;
-    const target = 35; // 35% preview progress
-    const offset = circumference - (target / 100) * circumference;
-    fill.style.strokeDashoffset = offset;
-
-    // Count up %
-    let current = 0;
-    const timer = setInterval(() => {
-      if (current >= target) { clearInterval(timer); return; }
-      current++;
-      pct.textContent = current + '%';
+  const circ = 2 * Math.PI * 25;
+  fill.style.strokeDasharray  = circ;
+  fill.style.strokeDashoffset = circ;
+  const target = 35;
+  setTimeout(() => {
+    fill.style.strokeDashoffset = circ - (target / 100) * circ;
+    let cur = 0;
+    const t = setInterval(() => {
+      if (cur >= target) { clearInterval(t); return; }
+      pct.textContent = (++cur) + '%';
     }, 1500 / target);
+  }, 300);
+}, 600);
 
-    obs.unobserve(entry.target);
-  }, { threshold: 0.5 });
-  obs.observe($('#progressRingWrap'));
+/* ════════════════════════════════════════════
+   11. TICKER DUPLICATE
+   ════════════════════════════════════════════ */
+const track = $('#tickerTrack');
+if (track) track.innerHTML += track.innerHTML;
+
+/* ════════════════════════════════════════════
+   12. GLITCH SETUP
+   ════════════════════════════════════════════ */
+const gl = $('#glitchLine');
+if (gl) { gl.classList.add('glitch'); gl.setAttribute('data-text', gl.textContent); }
+
+/* ════════════════════════════════════════════
+   13. CODE STRIP CYCLING
+   ════════════════════════════════════════════ */
+(function () {
+  const strip = $('#codeStrip');
+  if (!strip) return;
+  const sets = [
+    ['async/await','Closures','Proxies','Modules'],
+    ['Generators','WeakRef','Iterators','Symbols'],
+    ['Event Loop','Microtasks','Workers','WASM'],
+    ['Destructuring','Spread','Opt. Chain','Nullish'],
+  ];
+  let idx = 0;
+  setInterval(() => {
+    strip.style.opacity = '0';
+    setTimeout(() => {
+      idx = (idx + 1) % sets.length;
+      strip.innerHTML = sets[idx].map((s, i) =>
+        `<span class="bcs-item"><span class="${i % 2 ? 'fn' : 'kw'}">${s}</span></span>` +
+        (i < 3 ? '<span class="bcs-sep">•</span>' : '')
+      ).join('');
+      strip.style.transition = 'opacity .4s';
+      strip.style.opacity = '1';
+    }, 380);
+  }, 3000);
 })();
 
-/* ─────────────────────────────────────────────
-   11. TICKER — DUPLICATE FOR SEAMLESS LOOP
-───────────────────────────────────────────── */
-(function initTicker() {
-  const track = $('#tickerTrack');
-  if (!track) return;
-  // Clone content for seamless loop
-  track.innerHTML += track.innerHTML;
-})();
-
-/* ─────────────────────────────────────────────
-   12. GLITCH TEXT SETUP
-───────────────────────────────────────────── */
-(function initGlitch() {
-  const el = $('#glitchLine');
-  if (!el) return;
-  el.classList.add('glitch');
-  el.setAttribute('data-text', el.textContent);
-})();
-
-/* ─────────────────────────────────────────────
-   13. HEADER SCROLL EFFECT
-───────────────────────────────────────────── */
-(function initHeaderScroll() {
-  const header = $('#siteHeader');
-  if (!header) return;
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 30) {
-      header.style.borderBottomColor = 'rgba(247,223,30,0.2)';
-    } else {
-      header.style.borderBottomColor = 'rgba(247,223,30,0.1)';
-    }
+/* ════════════════════════════════════════════
+   14. BOOK LOGO HOVER GLOW
+   ════════════════════════════════════════════ */
+const bookLogo = $('#bookLogo');
+if (bookLogo) {
+  bookLogo.addEventListener('mouseenter', () => {
+    bookLogo.style.boxShadow = '0 0 50px rgba(247,223,30,0.6),0 0 100px rgba(247,223,30,0.25)';
+    bookLogo.style.transform = 'scale(1.05)'; bookLogo.style.transition = 'all .3s';
   });
-})();
-
-/* ─────────────────────────────────────────────
-   14. BOOK LOGO HOVER — extra glow effect
-───────────────────────────────────────────── */
-(function initBookLogoHover() {
-  const logo = $('#bookLogo');
-  if (!logo) return;
-
-  logo.addEventListener('mouseenter', () => {
-    logo.style.boxShadow = '0 0 60px rgba(247,223,30,0.6), 0 0 120px rgba(247,223,30,0.3)';
-    logo.style.transform = 'scale(1.04)';
-    logo.style.transition = 'all 0.3s';
+  bookLogo.addEventListener('mouseleave', () => {
+    bookLogo.style.boxShadow = ''; bookLogo.style.transform = '';
   });
-  logo.addEventListener('mouseleave', () => {
-    logo.style.boxShadow = '';
-    logo.style.transform = '';
-  });
-})();
+}
 
-/* ─────────────────────────────────────────────
+/* ════════════════════════════════════════════
    15. KONAMI CODE EASTER EGG
-───────────────────────────────────────────── */
-(function initKonami() {
+   ════════════════════════════════════════════ */
+(function () {
   const code = [38,38,40,40,37,39,37,39,66,65];
   const hint  = $('#easterHint');
   const modal = $('#easterModal');
   const close = $('#emClose');
-  let progress = 0;
+  let prog = 0;
 
   document.addEventListener('keydown', e => {
-    if (e.keyCode === code[progress]) {
-      progress++;
+    if (e.keyCode === code[prog]) {
+      prog++;
       if (hint) hint.classList.add('active');
-      if (progress === code.length) {
-        progress = 0;
+      if (prog === code.length) {
+        prog = 0;
         if (modal) modal.classList.add('show');
-        setTimeout(() => { if (hint) hint.classList.remove('active'); }, 2000);
+        setTimeout(() => hint && hint.classList.remove('active'), 2000);
       }
     } else {
-      progress = 0;
+      prog = 0;
       if (hint) hint.classList.remove('active');
     }
   });
-
   if (close) close.addEventListener('click', () => modal.classList.remove('show'));
-  if (modal) modal.addEventListener('click', e => {
-    if (e.target === modal) modal.classList.remove('show');
-  });
+  if (modal) modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('show'); });
 })();
 
-/* ─────────────────────────────────────────────
-   16. READ BUTTON — ripple on click
-───────────────────────────────────────────── */
-(function initRipple() {
-  const btn = $('#readBtn');
-  if (!btn) return;
-  btn.addEventListener('click', function(e) {
-    const ripple = this.querySelector('.btn-ripple');
-    if (!ripple) return;
-    ripple.style.opacity = '1';
-    setTimeout(() => ripple.style.opacity = '0', 400);
-  });
-})();
+/* ════════════════════════════════════════════
+   16. PAGE TRANSITION → Content.html
+   ════════════════════════════════════════════ */
+function goToContents() {
+  const overlay = $('#pageTransition');
+  if (!overlay) { window.location.href = 'Content.html'; return; }
+  overlay.classList.add('active');
+  setTimeout(() => { window.location.href = 'Content.html'; }, 650);
+}
+window.goToContents = goToContents;
 
-/* ─────────────────────────────────────────────
-   17. CODE STRIP CYCLING on book cover
-───────────────────────────────────────────── */
-(function initCodeStrip() {
-  const strip = $('#codeStrip');
-  if (!strip) return;
-
-  const sets = [
-    ['async / await', 'Closures', 'Proxies', 'Modules'],
-    ['Generators', 'WeakRef', 'Iterators', 'Symbols'],
-    ['Event Loop', 'Microtasks', 'Web Workers', 'WASM'],
-    ['Destructuring', 'Spread', 'Optional Chain', 'Nullish'],
-  ];
-  let setIdx = 0;
-
-  function updateStrip() {
-    const s = sets[setIdx];
-    strip.style.opacity = '0';
-    strip.style.transition = 'opacity 0.4s';
-    setTimeout(() => {
-      strip.innerHTML = s.map((item, i) =>
-        `<span class="bcs-item"><span class="${i % 2 === 0 ? 'kw' : 'fn'}">${item}</span></span>` +
-        (i < s.length - 1 ? '<span class="bcs-sep">•</span>' : '')
-      ).join('');
-      strip.style.opacity = '1';
-    }, 400);
-    setIdx = (setIdx + 1) % sets.length;
-  }
-
-  setInterval(updateStrip, 3000);
-})();
-
-/* ─────────────────────────────────────────────
-   18. NAV LINK ACTIVE HIGHLIGHT
-───────────────────────────────────────────── */
-(function initNavHighlight() {
-  $$('.hn-link').forEach(link => {
-    link.addEventListener('click', function() {
-      $$('.hn-link').forEach(l => l.style.color = '');
-      this.style.color = 'var(--yellow)';
-      setTimeout(() => this.style.color = '', 1000);
-    });
-  });
-})();
-
-console.log('%c{js} The Infinite Loop', 'font-size:22px;font-family:monospace;color:#F7DF1E;background:#000;padding:12px 24px;');
-console.log('%cYou found the console — you\'re going to enjoy this book.', 'color:#00FFA3;font-family:monospace;font-size:12px;');
-console.log('%cTry the Konami code on the page ↑↑↓↓←→←→BA', 'color:rgba(255,255,255,0.4);font-family:monospace;font-size:10px;');
+/* ── Console Easter Egg ── */
+console.log('%c{js} The Infinite Loop — by Aman', 'font-size:20px;font-family:monospace;color:#F7DF1E;background:#000;padding:10px 22px;');
+console.log('%cWelcome, student! This ebook was built for YOU. 🎓', 'color:#00FFA3;font-family:monospace;font-size:11px;');
+console.log('%cTry: ↑↑↓↓←→←→BA on the page for a surprise!', 'color:rgba(255,255,255,0.35);font-family:monospace;font-size:10px;');
